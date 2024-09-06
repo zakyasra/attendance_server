@@ -1,6 +1,7 @@
 const express = require("express");
 const dotenv = require("dotenv");
 const UserRoutes = require("./routes/user");
+const AttendanceRoutes = require("./routes/attendance");
 const logger = require("./middleware/logger");
 
 dotenv.config();
@@ -20,6 +21,7 @@ app.get("/api", (req, res) => {
 
 // User routes
 app.use("/user", UserRoutes);
+app.use("/attendance", AttendanceRoutes);
 
 app.listen(PORT, () => {
   console.log(`Server is running in port ${PORT}`);

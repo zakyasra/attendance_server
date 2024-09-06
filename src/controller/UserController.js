@@ -1,5 +1,4 @@
 const { PrismaClient } = require("@prisma/client");
-const { use } = require("../routes/user");
 const prisma = new PrismaClient();
 
 const getUser = async (req, res) => {
