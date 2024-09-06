@@ -10,7 +10,18 @@ const getAttendance = async (req, res) => {
   if (work_date) where.work_date = { equals: new Date(work_date) };
   if (user_id) where.user_id = +user_id;
 
-  const attendance = await prisma.attendance.findMany({ where });
+  const attendance = await prisma.attendance.findMany({
+    where,
+    include: {
+      user: {
+        select: {
+          id: true,
+          name: true,
+          image: true
+        }
+      }
+    }
+  });
   res.status(200).send({
     message: "Success get attendance",
     data: attendance
