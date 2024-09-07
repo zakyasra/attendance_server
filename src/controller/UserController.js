@@ -1,12 +1,9 @@
-const { PrismaClient } = require("@prisma/client");
-const prisma = new PrismaClient();
+const prisma = require("../db");
+const { sendSuccess, sendError } = require("../utils/responseHelper");
 
 const getUser = async (req, res) => {
   const users = await prisma.user.findMany();
-  res.status(200).send({
-    message: "Success get user",
-    data: users
-  });
+  sendSuccess(res, "Success get user", users);
 };
 
 const detailUser = async (req, res) => {
@@ -17,15 +14,14 @@ const detailUser = async (req, res) => {
   });
 
   if (!user)
-    return res.status(404).send({
-      message: "User not found",
-      data: user
-    });
+    return sendError(
+      res,
+      404,
+      "User not found",
+      `User with id ${id} is not found`
+    );
 
-  res.status(200).send({
-    message: "Success get detail User",
-    data: user
-  });
+  sendSuccess(res, "Success get detail user", user);
 };
 
 const createUser = async (req, res) => {
@@ -33,10 +29,7 @@ const createUser = async (req, res) => {
 
   const user = await prisma.user.create({ data });
 
-  res.status(201).send({
-    message: "Success create user",
-    data: user
-  });
+  sendSuccess(res, "Success create user", user);
 };
 
 const updateUser = async (req, res) => {
@@ -48,10 +41,7 @@ const updateUser = async (req, res) => {
     data
   });
 
-  res.status(201).send({
-    message: "Success update user",
-    data: user
-  });
+  sendSuccess(res, "Success update user", user);
 };
 
 const deleteUser = async (req, res) => {
@@ -63,10 +53,7 @@ const deleteUser = async (req, res) => {
     }
   });
 
-  res.status(201).send({
-    message: "Success delete user",
-    data: user
-  });
+  sendSuccess(res, "Success delete user", user);
 };
 
 module.exports = {

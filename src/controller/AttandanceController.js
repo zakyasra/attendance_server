@@ -1,17 +1,9 @@
-const { PrismaClient } = require("@prisma/client");
 const moment = require("moment");
-const prisma = new PrismaClient();
+const { sendSuccess, sendError } = require("../utils/responseHelper");
+const prisma = require("../db/index");
 
 const getAttendance = async (req, res) => {
-  const { work_date, user_id } = req.query;
-
-  //   Search by user_id dan work_date hari ini
-  const where = {};
-  if (work_date) where.work_date = { equals: new Date(work_date) };
-  if (user_id) where.user_id = +user_id;
-
   const attendance = await prisma.attendance.findMany({
-    where,
     include: {
       user: {
         select: {
@@ -22,10 +14,34 @@ const getAttendance = async (req, res) => {
       }
     }
   });
-  res.status(200).send({
-    message: "Success get attendance",
-    data: attendance
+
+  sendSuccess(res, "Success get attendace", attendance);
+};
+
+const getCurrentAttendance = async (req, res) => {
+  const { work_date, user_id } = req.query;
+
+  if (!work_date) {
+    sendError(res, 400, "Incomplete request data", "work_date is missing");
+    return;
+  }
+  if (!user_id) {
+    sendError(res, 400, "Incomplete request data", "user_id is missing");
+    return;
+  }
+
+  const attendance = await prisma.attendance.findFirst({
+    where: {
+      work_date: { equals: new Date(work_date) },
+      user_id: +user_id
+    }
   });
+
+  if (attendance) {
+    sendSuccess(res, "Success get current attendance", attendance);
+  } else {
+    sendSuccess(res, "User does not have current attendance");
+  }
 };
 
 const createAttendance = async (req, res) => {
@@ -34,15 +50,12 @@ const createAttendance = async (req, res) => {
   const attendance = await prisma.attendance.create({
     data: {
       ...data,
-      work_date: new Date(data.work_date),
+      work_date: moment.utc(data.work_date),
       check_in: moment.utc(data.check_in)
     }
   });
 
-  res.status(201).send({
-    message: "Success create attendance",
-    data: attendance
-  });
+  sendSuccess(res, "Success create attendance", attendance);
 };
 
 const updateAttendance = async (req, res) => {
@@ -57,10 +70,7 @@ const updateAttendance = async (req, res) => {
     }
   });
 
-  res.status(201).send({
-    message: "Success update attendance",
-    data: attendance
-  });
+  sendSuccess(res, "Success update attendance", attendance);
 };
 
 const deleteAttendance = async (req, res) => {
@@ -72,14 +82,12 @@ const deleteAttendance = async (req, res) => {
     }
   });
 
-  res.status(201).send({
-    message: "Success delete attendance",
-    data: attendance
-  });
+  sendSuccess(res, "Success delete attendance", attendance);
 };
 
 module.exports = {
   getAttendance,
+  getCurrentAttendance,
   createAttendance,
   deleteAttendance,
   updateAttendance
